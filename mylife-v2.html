@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ikram — My Life Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D0C0A;--surface:#161512;--surface2:#1E1C18;--surface3:#262420;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --text:#F0EDE6;--muted:#9B9690;--faint:#5A5750;
+  --health:#4CAF82;--health-dim:#1A3D2B;
+  --work:#E8A838;--work-dim:#3D2E10;
+  --creative:#C06BE0;--creative-dim:#2D1A3D;
+  --life:#5B9CF0;--life-dim:#1A2A3D;
+  --gold:#D4A853;--gold-dim:#2A2010;
+  --green:#2D7A5F;--green-light:#1A3D2B;
+  --red:#E05555;
+}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:99px}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* LOGIN */
+#login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;padding:2rem}
+.login-wrap{max-width:420px;width:100%;text-align:center}
+.login-eyebrow{font-family:'Syne Mono',monospace;font-size:10px;letter-spacing:0.3em;color:var(--muted);text-transform:uppercase;margin-bottom:2rem}
+.login-title{font-family:'Playfair Display',serif;font-size:52px;line-height:1.1;margin-bottom:0.5rem;background:linear-gradient(135deg,#F0EDE6 0%,#D4A853 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:3rem;line-height:1.6}
+.login-field input{width:100%;padding:14px 20px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;font-family:'Syne',sans-serif;font-size:14px;color:var(--text);outline:none;text-align:center;letter-spacing:0.2em;margin-bottom:1rem;transition:border-color 0.3s}
+.login-field input:focus{border-color:var(--gold)}
+.login-cta{width:100%;padding:14px;background:var(--gold);color:#0D0C0A;border:none;border-radius:12px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.login-cta:hover{opacity:0.88;transform:translateY(-1px)}
+.login-err{font-size:12px;color:var(--red);margin-top:0.75rem;min-height:18px}
+
+/* APP */
+#app{display:none}
+.topnav{background:rgba(13,12,10,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;position:sticky;top:0;z-index:100;overflow-x:auto}
+.topnav::-webkit-scrollbar{height:0}
+.nav-tab{padding:1rem 1.25rem;font-size:12px;font-weight:600;letter-spacing:0.06em;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s;background:none;border-left:none;border-right:none;border-top:none;font-family:'Syne',sans-serif;display:flex;align-items:center;gap:6px}
+.nav-tab:hover{color:var(--text)}
+.nav-tab.active{color:var(--text);border-bottom-color:var(--gold)}
+.nav-tab[data-theme="home"].active{color:var(--gold)}
+.nav-tab[data-theme="health"].active{color:var(--health);border-bottom-color:var(--health)}
+.nav-tab[data-theme="work"].active{color:var(--work);border-bottom-color:var(--work)}
+.nav-tab[data-theme="creative"].active{color:var(--creative);border-bottom-color:var(--creative)}
+.nav-tab[data-theme="life"].active{color:var(--life);border-bottom-color:var(--life)}
+.nav-add-btn{margin-left:auto;padding:0.5rem 1rem;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;background:none;border:1px solid var(--border2);border-radius:8px;font-family:'Syne',sans-serif;white-space:nowrap;transition:all 0.2s;flex-shrink:0}
+.nav-add-btn:hover{color:var(--text)}
+.nav-logout{padding:0.5rem 0.75rem;font-size:11px;color:var(--faint);cursor:pointer;background:none;border:none;font-family:'Syne',sans-serif;flex-shrink:0}
+.page{display:none;animation:fadeIn 0.3s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.section-title{font-size:10px;font-weight:700;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:1rem}
+
+/* HOME */
+.home-wrap{max-width:1000px;margin:0 auto;padding:2.5rem 1.5rem}
+.hero-quote{text-align:center;padding:2.5rem 1rem 2rem;position:relative}
+.hero-quote::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:1px;height:32px;background:linear-gradient(to bottom,transparent,var(--gold))}
+.daily-quote{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(16px,2.5vw,24px);color:var(--text);line-height:1.5;max-width:680px;margin:0 auto 0.5rem}
+.daily-author{font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase}
+.neuro-divider{border:none;border-top:1px solid var(--border);margin:1.5rem auto;max-width:160px}
+.neuro-quote{font-family:'Syne Mono',monospace;font-size:11px;color:var(--faint);text-align:center;max-width:560px;margin:0 auto;line-height:1.8}
+.neuro-quote strong{color:var(--gold);font-weight:400}
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:2rem 0 2.5rem}
+.theme-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden}
+.theme-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.tc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem}
+.tc-icon{font-size:20px}
+.tc-tag{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:var(--surface3);color:var(--muted)}
+.tc-name{font-size:15px;font-weight:700;margin-bottom:2px}
+.tc-sub{font-size:11px;color:var(--muted);margin-bottom:0.75rem}
+.tc-bar-wrap{height:3px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-bottom:5px}
+.tc-bar{height:3px;border-radius:99px;transition:width 0.8s}
+.tc-stats{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:'Syne Mono',monospace}
+.tc-streak{font-size:10px;color:var(--gold);margin-top:4px;font-family:'Syne Mono',monospace}
+
+/* TODO */
+.home-todo{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
+.todo-input-row{display:flex;gap:8px;margin-bottom:1rem}
+.todo-input-row input{flex:1;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text);outline:none}
+.todo-input-row button{padding:9px 14px;background:var(--gold);color:#0D0C0A;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.todo-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--surface2);margin-bottom:5px;transition:opacity 0.2s}
+.todo-item.done{opacity:0.4}
+.todo-check{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all 0.2s}
+.todo-item.done .todo-check{background:var(--green);border-color:var(--green);color:#fff}
+.todo-text{flex:1;font-size:13px}
+.todo-item.done .todo-text{text-decoration:line-through;color:var(--muted)}
+.todo-del{background:none;border:none;color:var(--faint);cursor:pointer;font-size:15px;opacity:0;transition:opacity 0.2s}
+.todo-item:hover .todo-del{opacity:1}
+
+/* THEME PAGE */
+.theme-page-wrap{max-width:960px;margin:0 auto;padding:2rem 1.5rem}
+.theme-hero{padding:1.5rem 0 1.25rem;border-bottom:1px solid var(--border);margin-bottom:1.5rem;display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.theme-hero h1{font-family:'Playfair Display',serif;font-size:32px;font-weight:700}
+.theme-hero p{font-size:13px;color:var(--muted);margin-top:4px}
+.edit-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:0.04em;transition:all 0.2s}
+.edit-btn:hover{color:var(--text);background:var(--surface2)}
+.edit-btn.primary{background:var(--gold);color:#0D0C0A;border-color:var(--gold)}
+.theme-layout{display:grid;grid-template-columns:1fr 280px;gap:1.25rem;align-items:start}
+@media(max-width:750px){.theme-layout{grid-template-columns:1fr}}
+
+/* STREAK BAR */
+.streak-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.streak-num{font-family:'Playfair Display',serif;font-size:36px;color:var(--gold);line-height:1}
+.streak-label{font-size:11px;color:var(--muted)}
+.streak-fire{font-size:24px}
+.streak-days{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.sday{width:22px;height:22px;border-radius:5px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--faint);font-family:'Syne Mono',monospace;cursor:pointer;transition:all 0.2s;border:1px solid transparent}
+.sday.done{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.sday.today{border-color:var(--border2)}
+
+/* CRENEAUX */
+.creneau-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem}
+.creneau-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.creneau-slot{background:var(--surface2);border-radius:9px;padding:9px 11px;cursor:pointer;border:1px solid transparent;transition:all 0.15s}
+.creneau-slot:hover{border-color:var(--border2)}
+.creneau-slot.active-slot{background:var(--gold-dim);border-color:var(--gold)}
+.slot-time{font-size:12px;font-weight:600;color:var(--text)}
+.creneau-slot.active-slot .slot-time{color:var(--gold)}
+.slot-desc{font-size:10px;color:var(--muted);margin-top:2px}
+.creneau-tip{font-size:11px;color:var(--gold);background:var(--gold-dim);border-radius:8px;padding:8px 12px;margin-top:8px;display:none;line-height:1.6}
+.creneau-tip.show{display:block}
+
+/* GOALS SECTION */
+.goals-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1.25rem}
+
+/* GOAL CARD */
+.goal-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;transition:border-color 0.2s}
+.goal-card:hover{border-color:var(--border2)}
+.goal-card-header{padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.goal-card-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all 0.2s}
+.goal-card.goal-done .goal-card-check{background:var(--green);border-color:var(--green);color:#fff}
+.goal-card-info{flex:1;min-width:0}
+.goal-card-name{font-size:13px;font-weight:600;color:var(--text)}
+.goal-card.goal-done .goal-card-name{text-decoration:line-through;color:var(--muted)}
+.goal-card-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:'Syne Mono',monospace}
+.goal-card-pct{font-family:'Syne Mono',monospace;font-size:13px;font-weight:600;flex-shrink:0}
+.goal-card-arrow{font-size:11px;color:var(--faint);flex-shrink:0;transition:transform 0.2s}
+.goal-card.expanded .goal-card-arrow{transform:rotate(90deg)}
+.goal-card-bar{height:2px;background:var(--surface3);overflow:hidden}
+.goal-card-bar-fill{height:2px;transition:width 0.5s}
+.goal-card-body{padding:0 14px 14px;display:none}
+.goal-card.expanded .goal-card-body{display:block}
+
+/* GOAL TYPE: STEPS */
+.steps-list{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.step-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--surface3);cursor:pointer;transition:all 0.15s}
+.step-item:hover{background:var(--surface)}
+.step-check{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;transition:all 0.2s}
+.step-item.done .step-check{background:var(--green);border-color:var(--green);color:#fff}
+.step-num{font-size:9px;color:var(--faint);font-family:'Syne Mono',monospace;flex-shrink:0;width:18px}
+.step-name{flex:1;font-size:12px;color:var(--text)}
+.step-item.done .step-name{text-decoration:line-through;color:var(--muted)}
+.step-del{background:none;border:none;color:var(--faint);cursor:pointer;font-size:13px;opacity:0;padding:0 2px}
+.step-item:hover .step-del{opacity:1}
+.add-step-row{display:flex;gap:6px}
+.add-step-row input{flex:1;padding:7px 10px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;font-family:'Syne',sans-serif;font-size:12px;color:var(--text);outline:none}
+.add-step-row button{padding:7px 12px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;font-family:'Syne',sans-serif;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.add-step-row button:hover{color:var(--text)}
+
+/* GOAL TYPE: QUANTITY */
+.qty-display{text-align:center;margin:8px 0 12px}
+.qty-big{font-family:'Playfair Display',serif;font-size:40px;line-height:1}
+.qty-unit{font-size:11px;color:var(--muted);margin-top:2px}
+.qty-controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px}
+.qty-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border2);background:var(--surface3);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-family:'Syne',sans-serif;line-height:1}
+.qty-btn:hover{background:var(--surface);border-color:var(--border2)}
+.qty-fraction{font-family:'Syne Mono',monospace;font-size:13px;color:var(--muted)}
+.qty-manual{display:flex;gap:6px;margin-bottom:8px}
+.qty-manual input{flex:1;padding:7px 10px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;font-family:'Syne',sans-serif;font-size:12px;color:var(--text);outline:none;text-align:center}
+.qty-manual select{padding:7px 8px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;font-family:'Syne',sans-serif;font-size:12px;color:var(--text);outline:none}
+
+/* GOAL TYPE: HOURS */
+.hours-display{text-align:center;margin:8px 0 10px}
+.hours-big{font-family:'Playfair Display',serif;font-size:40px;line-height:1}
+.hours-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.hours-log{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.hours-log button{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface3);font-family:'Syne',sans-serif;font-size:11px;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.hours-log button:hover{color:var(--text);border-color:var(--border2)}
+.hours-manual{display:flex;gap:6px}
+.hours-manual input{flex:1;padding:7px 10px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;font-family:'Syne',sans-serif;font-size:12px;color:var(--text);outline:none;text-align:center}
+.hours-manual button{padding:7px 12px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;font-family:'Syne',sans-serif;font-size:11px;color:var(--muted);cursor:pointer}
+.hours-manual button:hover{color:var(--text)}
+.session-log-list{margin-top:8px;display:flex;flex-direction:column;gap:4px;max-height:100px;overflow-y:auto}
+.session-log-item{display:flex;justify-content:space-between;font-size:10px;color:var(--faint);font-family:'Syne Mono',monospace;padding:3px 6px;border-radius:5px;background:var(--surface3)}
+
+/* GOAL ACTIONS */
+.goal-card-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+
+/* ADD GOAL MODAL */
+.add-goal-btn{width:100%;padding:10px;border-radius:10px;border:1px dashed var(--border2);background:transparent;font-family:'Syne',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.2s;margin-top:4px}
+.add-goal-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* NOTES */
+.notes-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1.25rem}
+.note-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.note-chip{padding:5px 12px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);font-size:11px;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.note-chip:hover,.note-chip.active{background:var(--surface3);color:var(--text);border-color:var(--border2)}
+.note-chip.new-chip{border-style:dashed}
+.note-editor-area{margin-top:10px;display:none}
+.note-editor-area.open{display:block}
+.note-title-in{width:100%;background:transparent;border:none;outline:none;font-family:'Playfair Display',serif;font-size:18px;color:var(--text);padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border)}
+.note-body-in{width:100%;background:transparent;border:none;outline:none;font-family:'Syne',sans-serif;font-size:13px;color:var(--muted);resize:none;min-height:120px;line-height:1.7}
+.note-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}
+.note-save{padding:7px 16px;background:var(--gold);color:#0D0C0A;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer}
+.note-cancel-btn{padding:7px 12px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-family:'Syne',sans-serif;font-size:11px;cursor:pointer}
+.note-del-btn{padding:7px 12px;background:transparent;color:var(--red);border:1px solid transparent;border-radius:8px;font-family:'Syne',sans-serif;font-size:11px;cursor:pointer}
+
+/* REWARDS */
+.rewards-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1.25rem}
+.reward-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;background:var(--surface2);margin-bottom:5px;opacity:0.4;transition:all 0.3s}
+.reward-row.unlocked{opacity:1;background:var(--gold-dim);border:1px solid rgba(212,168,83,0.25)}
+.reward-icon-r{font-size:16px;flex-shrink:0}
+.reward-text-r{flex:1;font-size:12px;color:var(--muted)}
+.reward-row.unlocked .reward-text-r{color:var(--text)}
+.reward-milestone-r{font-size:10px;color:var(--faint);font-family:'Syne Mono',monospace}
+.reward-row.unlocked .reward-milestone-r{color:var(--gold)}
+.add-reward-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.add-reward-row input,.add-reward-row select{padding:7px 10px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;font-family:'Syne',sans-serif;font-size:11px;color:var(--text);outline:none}
+.add-reward-row input{flex:1;min-width:120px}
+.add-reward-row button{padding:7px 12px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;font-family:'Syne',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.add-reward-row button:hover{color:var(--text)}
+
+/* POMO */
+.pomo-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1.25rem}
+.pomo-modes{display:flex;gap:4px;margin-bottom:1rem}
+.pomo-mode-btn{flex:1;padding:5px;border-radius:7px;border:1px solid var(--border);background:transparent;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.04em;color:var(--muted);cursor:pointer;text-transform:uppercase;transition:all 0.2s}
+.pomo-mode-btn.active{color:#0D0C0A;border-color:transparent}
+.pomo-ring{display:flex;justify-content:center;margin:0.5rem 0}
+.pomo-time-val{font-family:'Syne Mono',monospace;font-size:36px;color:var(--text);letter-spacing:-1px;text-align:center;line-height:1}
+.pomo-time-lbl{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--faint);text-align:center;margin-top:3px;margin-bottom:0.75rem}
+.pomo-btns{display:flex;gap:6px;justify-content:center;margin-bottom:0.75rem}
+.pomo-action{padding:7px 18px;border-radius:8px;border:1px solid var(--border2);background:transparent;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--text);cursor:pointer;letter-spacing:0.04em;transition:all 0.2s}
+.pomo-action.go{color:#0D0C0A;border-color:transparent}
+.pomo-action:hover{opacity:0.8}
+.pomo-sdots{display:flex;justify-content:center;gap:4px;margin-bottom:0.75rem}
+.psd{width:7px;height:7px;border-radius:50%;background:var(--surface3);transition:background 0.3s}
+.pomo-settings-toggle{width:100%;background:none;border:none;font-family:'Syne',sans-serif;font-size:10px;letter-spacing:0.08em;color:var(--faint);cursor:pointer;text-transform:uppercase;padding:4px 0;transition:color 0.2s}
+.pomo-settings-toggle:hover{color:var(--muted)}
+.pomo-settings-body{display:none;padding-top:10px;border-top:1px solid var(--border);margin-top:6px}
+.pomo-settings-body.open{display:block}
+.pomo-setting{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.pomo-setting-lbl{font-size:11px;color:var(--muted)}
+.pomo-adj{display:flex;align-items:center;gap:6px}
+.pomo-adj button{width:20px;height:20px;border-radius:50%;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pomo-adj span{font-family:'Syne Mono',monospace;font-size:12px;min-width:24px;text-align:center}
+
+/* AI */
+.ai-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1.25rem}
+.ai-messages{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.ai-msg{padding:8px 11px;border-radius:9px;font-size:12px;line-height:1.6}
+.ai-msg.user{background:var(--gold-dim);color:var(--gold);align-self:flex-end;border-radius:9px 9px 2px 9px;max-width:85%}
+.ai-msg.assistant{background:var(--surface2);color:var(--muted);align-self:flex-start;border-radius:9px 9px 9px 2px;max-width:90%}
+.ai-msg.thinking{color:var(--faint);font-style:italic}
+.ai-sugs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.ai-sug{padding:4px 9px;border-radius:99px;border:1px solid var(--border2);background:transparent;font-family:'Syne',sans-serif;font-size:10px;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.ai-sug:hover{color:var(--text);background:var(--surface2)}
+.ai-input-row{display:flex;gap:6px}
+.ai-input{flex:1;padding:8px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:'Syne',sans-serif;font-size:12px;color:var(--text);outline:none}
+.ai-send{padding:8px 12px;background:var(--gold);color:#0D0C0A;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer}
+
+/* ADD THEME MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:200;display:none;align-items:center;justify-content:center;padding:2rem}
+.modal-overlay.open{display:flex}
+.modal-card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:2rem;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:1.5rem}
+.modal-field{margin-bottom:1rem}
+.modal-field label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.modal-field input,.modal-field select{width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text);outline:none}
+.emoji-picker{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.emoji-opt{width:32px;height:32px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.emoji-opt.selected{background:var(--gold-dim);border-color:var(--gold)}
+.color-picker{display:flex;gap:7px;flex-wrap:wrap;margin-top:5px}
+.color-opt{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all 0.2s}
+.color-opt.selected{border-color:#fff;transform:scale(1.2)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.5rem}
+.modal-cancel{padding:9px 18px;border-radius:9px;border:1px solid var(--border2);background:transparent;font-family:'Syne',sans-serif;font-size:13px;color:var(--muted);cursor:pointer}
+.modal-confirm{padding:9px 22px;border-radius:9px;background:var(--gold);color:#0D0C0A;border:none;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+
+/* ADD GOAL MODAL */
+.goal-modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:2rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.type-selector{display:flex;gap:6px;margin:8px 0 1.25rem}
+.type-btn{flex:1;padding:8px;border-radius:9px;border:1px solid var(--border);background:transparent;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;text-align:center;transition:all 0.2s;line-height:1.4}
+.type-btn .type-icon{display:block;font-size:18px;margin-bottom:3px}
+.type-btn.selected{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.goal-type-config{background:var(--surface2);border-radius:12px;padding:1rem;margin-top:0.75rem}
+.config-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.config-input{width:100%;padding:9px 12px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text);outline:none;margin-bottom:8px}
+.steps-preview{display:flex;flex-direction:column;gap:4px;margin-top:4px;max-height:160px;overflow-y:auto}
+.step-preview-item{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:7px;background:var(--surface3);font-size:12px;color:var(--muted)}
+.step-preview-num{font-size:9px;font-family:'Syne Mono',monospace;color:var(--faint);width:16px}
+.step-preview-del{background:none;border:none;color:var(--faint);cursor:pointer;font-size:13px;margin-left:auto}
+.add-step-inline{display:flex;gap:6px;margin-top:6px}
+.add-step-inline input{flex:1;padding:7px 10px;background:var(--surface3);border:1px solid var(--border);border-radius:7px;font-family:'Syne',sans-serif;font-size:12px;color:var(--text);outline:none}
+.add-step-inline button{padding:7px 11px;background:var(--surface3);border:1px solid var(--border);border-radius:7px;font-family:'Syne',sans-serif;font-size:12px;color:var(--muted);cursor:pointer}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="login-wrap">
+    <div class="login-eyebrow">My Life Dashboard</div>
+    <h1 class="login-title">Ikram</h1>
+    <p class="login-sub">Ton espace personnel pour tout gérer —<br>goals, travail, créativité, vie.</p>
+    <div class="login-field">
+      <input type="password" id="pwdIn" placeholder="mot de passe" maxlength="40" autocomplete="off"/>
+    </div>
+    <button class="login-cta" onclick="tryLogin()">Entrer →</button>
+    <p class="login-err" id="loginErr"></p>
+  </div>
+</div>
+
+<div id="app">
+  <nav class="topnav" id="topnav">
+    <button class="nav-tab active" data-theme="home" onclick="goPage('home',this)">🏠 Home</button>
+    <button class="nav-tab" data-theme="health" onclick="goPage('health',this)">💚 Health</button>
+    <button class="nav-tab" data-theme="work" onclick="goPage('work',this)">🟡 Work</button>
+    <button class="nav-tab" data-theme="creative" onclick="goPage('creative',this)">🟣 Creative</button>
+    <button class="nav-tab" data-theme="life" onclick="goPage('life',this)">🔵 Life</button>
+    <button class="nav-add-btn" onclick="openAddTheme()">+ Nouveau thème</button>
+    <button class="nav-logout" onclick="logout()">↩</button>
+  </nav>
+
+  <div id="page-home" class="page active">
+    <div class="home-wrap">
+      <div class="hero-quote">
+        <div class="daily-quote" id="dailyQuote"></div>
+        <div class="daily-author" id="dailyAuthor"></div>
+        <hr class="neuro-divider">
+        <div class="neuro-quote"><strong>Neuroscience :</strong> « Chaque pensée que tu choisis de répéter renforce un circuit neuronal. Ton cerveau se recâble littéralement selon ce sur quoi tu décides de te concentrer — <strong>tu n'es pas esclave de tes pensées, tu en es l'architecte.</strong> »<br><span style="color:var(--faint);font-size:10px;margin-top:4px;display:block">— Dr. Andrew Huberman</span></div>
+      </div>
+      <div class="section-title">Tes espaces</div>
+      <div class="theme-grid" id="themeGrid"></div>
+      <div class="section-title" style="margin-top:2rem">To-do général</div>
+      <div class="home-todo">
+        <div class="todo-input-row">
+          <input type="text" id="todoIn" placeholder="Ajouter une tâche..." onkeydown="if(event.key==='Enter')addTodo()"/>
+          <button onclick="addTodo()">+</button>
+        </div>
+        <div id="todoList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="theme-pages"></div>
+</div>
+
+<!-- ADD THEME MODAL -->
+<div class="modal-overlay" id="addThemeModal">
+  <div class="modal-card">
+    <div class="modal-title">Nouveau thème</div>
+    <div class="modal-field"><label>Nom</label><input type="text" id="newThemeName" placeholder="Ex: Finance, Travel..."/></div>
+    <div class="modal-field"><label>Description</label><input type="text" id="newThemeDesc" placeholder="Ex: Mes objectifs financiers"/></div>
+    <div class="modal-field"><label>Icône</label><div class="emoji-picker" id="emojiPicker"></div></div>
+    <div class="modal-field"><label>Couleur</label>
+      <div class="color-picker">
+        <div class="color-opt selected" style="background:#A8E6CF" onclick="selColor(this,'#A8E6CF')"></div>
+        <div class="color-opt" style="background:#FFD93D" onclick="selColor(this,'#FFD93D')"></div>
+        <div class="color-opt" style="background:#FF6B9D" onclick="selColor(this,'#FF6B9D')"></div>
+        <div class="color-opt" style="background:#74B9FF" onclick="selColor(this,'#74B9FF')"></div>
+        <div class="color-opt" style="background:#A29BFE" onclick="selColor(this,'#A29BFE')"></div>
+        <div class="color-opt" style="background:#FD79A8" onclick="selColor(this,'#FD79A8')"></div>
+        <div class="color-opt" style="background:#81ECEC" onclick="selColor(this,'#81ECEC')"></div>
+        <div class="color-opt" style="background:#FDCB6E" onclick="selColor(this,'#FDCB6E')"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('addThemeModal')">Annuler</button>
+      <button class="modal-confirm" onclick="confirmAddTheme()">Créer →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD GOAL MODAL -->
+<div class="modal-overlay" id="addGoalModal">
+  <div class="goal-modal">
+    <div class="modal-title">Nouveau goal</div>
+    <div class="modal-field"><label>Nom du goal</label><input type="text" id="newGoalName" placeholder="Ex: Portfolio, Gym, PFE..."/></div>
+    <div class="modal-field">
+      <label>Type de suivi</label>
+      <div class="type-selector">
+        <button class="type-btn selected" data-type="steps" onclick="selGoalType(this,'steps')"><span class="type-icon">📋</span>Étapes</button>
+        <button class="type-btn" data-type="quantity" onclick="selGoalType(this,'quantity')"><span class="type-icon">🔢</span>Quantité</button>
+        <button class="type-btn" data-type="hours" onclick="selGoalType(this,'hours')"><span class="type-icon">⏱️</span>Heures</button>
+      </div>
+    </div>
+    <div id="goalTypeConfig"></div>
+    <input type="hidden" id="goalThemeId"/>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('addGoalModal')">Annuler</button>
+      <button class="modal-confirm" onclick="confirmAddGoal()">Ajouter →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PWD="ikram2025pfe", SK="ikram_life_v2";
+const EMOJIS=["🌱","🏋️","📚","🎯","💰","✈️","🎵","🍕","🧘","🛠️","🌍","🐾","💻","🎨","📷","🏠","❤️","⚡","🌸","🦋","🔥","⭐","🎭","🎪"];
+const QUOTES=[
+  {q:"Le succès, c'est aller d'échec en échec sans perdre son enthousiasme.",a:"Winston Churchill"},
+  {q:"Ce que tu penses, tu le deviens. Ce que tu ressens, tu l'attires.",a:"Bouddha"},
+  {q:"La discipline est le pont entre les objectifs et les accomplissements.",a:"Jim Rohn"},
+  {q:"Ne comptez pas les jours, faites que les jours comptent.",a:"Muhammad Ali"},
+  {q:"Votre futur est créé par ce que vous faites aujourd'hui, pas demain.",a:"Robert Kiyosaki"},
+  {q:"La seule façon de faire du bon travail est d'aimer ce que vous faites.",a:"Steve Jobs"},
+  {q:"Chaque expert a d'abord été un débutant.",a:"Anonyme"},
+  {q:"L'action est la clé fondamentale de tout succès.",a:"Pablo Picasso"},
+  {q:"Rêve grand, travaille dur, reste concentrée.",a:"Anonyme"},
+  {q:"Ce n'est pas la montagne que nous gravissons qui nous épuise, c'est le petit caillou dans notre chaussure.",a:"Muhammad Ali"}
+];
+const CRENEAUX=[
+  {id:"morning",icon:"🌅",time:"Matin libre",desc:"Travail concentré · 1–3h",tip:"Parfait pour les tâches profondes — commence par la plus difficile."},
+  {id:"evening",icon:"🌙",time:"Soir (18h–21h)",desc:"Après les obligations",tip:"Idéal pour finir une session ou des tâches plus légères."},
+  {id:"micro",icon:"⚡",time:"Micro-sessions",desc:"15–30 min entre deux tâches",tip:"Lance le Pomodoro à 15 min. Parfait pour les petites corrections."},
+  {id:"car",icon:"🚗",time:"Trajets",desc:"Relire / écouter / planifier",tip:"Utilise ce temps pour réviser tes notes ou planifier ta prochaine session."}
+];
+const THEME_COLORS={health:"#4CAF82",work:"#E8A838",creative:"#C06BE0",life:"#5B9CF0"};
+
+let selEmoji=EMOJIS[0], selColor="#A8E6CF", curGoalType="steps", curGoalSteps=[], editingGoalIdx=null;
+const pomos={};
+
+function loadS(){try{return JSON.parse(localStorage.getItem(SK))||initState();}catch{return initState();}}
+function saveS(s){localStorage.setItem(SK,JSON.stringify(s));}
+function initState(){
+  const mkGoals=(names,type="steps")=>names.map(n=>({id:Date.now()+Math.random(),name:n,type:"steps",steps:[],done:false,streak:0,streakDays:[]}));
+  return{
+    themes:{
+      health:{name:"Health",icon:"💚",desc:"Gym, alimentation, bien-être",goals:mkGoals(["Gym 3x/semaine","Boire 2L d'eau par jour","Dormir 8h"]),notes:[],rewards:[{icon:"🏃",text:"Première semaine",pct:30},{icon:"💪",text:"Un mois de constance",pct:80}],customRewards:[],streak:0,streakDays:[]},
+      work:{name:"Work",icon:"🟡",desc:"PFE, portfolio, carrière",goals:mkGoals(["Correction PFE","Portfolio","Apprendre InDesign"]),notes:[],rewards:[{icon:"📝",text:"PFE corrigé",pct:50},{icon:"🎓",text:"Diplôme DENA",pct:100}],customRewards:[],streak:0,streakDays:[]},
+      creative:{name:"Creative",icon:"🟣",desc:"Dessin, vidéo, art",goals:mkGoals(["Dessiner 1x/semaine","Videography","Projet photo"]),notes:[],rewards:[{icon:"🎨",text:"Premier projet fini",pct:50}],customRewards:[],streak:0,streakDays:[]},
+      life:{name:"Life",icon:"🔵",desc:"Famille, routine, courses",goals:mkGoals(["Routine matinale","Courses organisées","Temps famille"]),notes:[],rewards:[{icon:"🌸",text:"Routine établie",pct:60}],customRewards:[],streak:0,streakDays:[]}
+    },
+    todos:[],customThemes:[],activeCreneaux:{}
+  };
+}
+
+// AUTH
+function tryLogin(){const v=document.getElementById('pwdIn').value.trim();if(v===PWD){sessionStorage.setItem('ika2','1');showApp();}else{document.getElementById('loginErr').textContent='Mot de passe incorrect.';document.getElementById('pwdIn').value='';}}
+document.getElementById('pwdIn').addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
+function logout(){sessionStorage.removeItem('ika2');document.getElementById('app').style.display='none';document.getElementById('login').style.display='flex';}
+function showApp(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';renderAll();}
+if(sessionStorage.getItem('ika2')==='1')showApp();
+
+function renderAll(){renderHome();buildThemePages();}
+
+// THEME HELPERS
+function getAllThemes(s){
+  const base=[['health',s.themes.health],['work',s.themes.work],['creative',s.themes.creative],['life',s.themes.life]];
+  return [...base,...(s.customThemes||[]).map(t=>[t.id,t])];
+}
+function getTheme(s,id){return s.themes[id]||(s.customThemes||[]).find(t=>t.id===id);}
+function getColor(id,t){return t.color||THEME_COLORS[id]||'#888';}
+function calcPct(t){const g=t.goals||[];if(!g.length)return 0;return Math.round(g.reduce((a,goal)=>a+goalPct(goal),0)/g.length);}
+function goalPct(g){
+  if(g.done)return 100;
+  if(g.type==='steps'){const total=(g.steps||[]).length;if(!total)return 0;return Math.round((g.steps.filter(s=>s.done).length/total)*100);}
+  if(g.type==='quantity'){const t=g.target||1;return Math.round(Math.min(100,(g.current||0)/t*100));}
+  if(g.type==='hours'){const t=g.targetHours||1;return Math.round(Math.min(100,(g.loggedHours||0)/t*100));}
+  return g.pct||0;
+}
+
+// HOME
+function renderHome(){
+  const s=loadS();
+  const q=QUOTES[new Date().getDate()%QUOTES.length];
+  document.getElementById('dailyQuote').textContent='"'+q.q+'"';
+  document.getElementById('dailyAuthor').textContent='— '+q.a;
+  const tg=document.getElementById('themeGrid');tg.innerHTML='';
+  getAllThemes(s).forEach(([id,t])=>{
+    const pct=calcPct(t);const c=getColor(id,t);
+    const card=document.createElement('div');card.className='theme-card';
+    card.innerHTML=`<div class="tc-header"><span class="tc-icon">${t.icon}</span><span class="tc-tag">${t.name.toUpperCase()}</span></div>
+      <div class="tc-name">${t.name}</div><div class="tc-sub">${t.desc||''}</div>
+      <div class="tc-bar-wrap"><div class="tc-bar" style="width:${pct}%;background:${c}"></div></div>
+      <div class="tc-stats"><span>${pct}% complété</span><span>${(t.goals||[]).filter(g=>g.done).length}/${(t.goals||[]).length} goals</span></div>
+      ${(t.streak||0)>0?`<div class="tc-streak">🔥 ${t.streak} jours de suite</div>`:''}`;
+    card.onclick=()=>goTheme(id);tg.appendChild(card);
+  });
+  renderTodos();
+}
+function renderTodos(){
+  const s=loadS();const l=document.getElementById('todoList');if(!l)return;l.innerHTML='';
+  (s.todos||[]).forEach((t,i)=>{
+    const d=document.createElement('div');d.className='todo-item'+(t.done?' done':'');
+    d.innerHTML=`<div class="todo-check" onclick="toggleTodo(${i})">${t.done?'✓':''}</div><span class="todo-text">${t.text}</span><button class="todo-del" onclick="delTodo(${i})">×</button>`;
+    l.appendChild(d);
+  });
+}
+function addTodo(){const inp=document.getElementById('todoIn');const v=inp.value.trim();if(!v)return;const s=loadS();s.todos.push({text:v,done:false});saveS(s);inp.value='';renderTodos();}
+function toggleTodo(i){const s=loadS();s.todos[i].done=!s.todos[i].done;saveS(s);renderTodos();}
+function delTodo(i){const s=loadS();s.todos.splice(i,1);saveS(s);renderTodos();}
+
+// NAV
+function goPage(id,btn){
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  if(id==='home'){document.getElementById('page-home').classList.add('active');renderHome();}
+  else{const pg=document.getElementById('tp-'+id);if(pg){pg.classList.add('active');renderTheme(id);}}
+}
+function goTheme(id){const btn=document.querySelector(`.nav-tab[data-theme="${id}"]`)||document.querySelector(`.nav-tab[data-id="${id}"]`);if(btn)goPage(id,btn);}
+
+// BUILD THEME PAGES
+function buildThemePages(){
+  const s=loadS();const c=document.getElementById('theme-pages');c.innerHTML='';
+  getAllThemes(s).forEach(([id,t])=>{
+    const pg=document.createElement('div');pg.id='tp-'+id;pg.className='page';
+    pg.innerHTML=themePageHTML(id,t);c.appendChild(pg);initPomo(id,getColor(id,t));
+  });
+}
+
+function themePageHTML(id,t){
+  const c=getColor(id,t);
+  return `<div class="theme-page-wrap">
+    <div class="theme-hero">
+      <div><h1 style="color:${c}">${t.icon} ${t.name}</h1><p>${t.desc||''}</p></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="edit-btn" onclick="editDesc('${id}')">✏️ Modifier</button>
+      </div>
+    </div>
+    <div class="theme-layout">
+      <div>
+        <div class="goals-section">
+          <div class="section-title">Goals & Progression</div>
+          <div id="goals-${id}"></div>
+          <button class="add-goal-btn" onclick="openAddGoal('${id}')">+ Nouveau goal</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem">
+          <div class="creneau-box" style="margin-bottom:0">
+            <div class="section-title">Créneaux du jour</div>
+            <div class="creneau-grid" id="creneaux-${id}"></div>
+            <div class="creneau-tip" id="ctip-${id}"></div>
+          </div>
+          <div id="streak-box-${id}"></div>
+        </div>
+        <div class="notes-section">
+          <div class="section-title">Notes</div>
+          <div class="note-chips" id="notechips-${id}"></div>
+          <div class="note-editor-area" id="noteeditor-${id}">
+            <input type="text" class="note-title-in" id="notetitle-${id}" placeholder="Titre..."/>
+            <textarea class="note-body-in" id="notebody-${id}" placeholder="Tes notes..."></textarea>
+            <div class="note-actions">
+              <button class="note-del-btn" onclick="delNote('${id}')">🗑 Supprimer</button>
+              <button class="note-cancel-btn" onclick="cancelNote('${id}')">Annuler</button>
+              <button class="note-save" onclick="saveNote('${id}')">Sauvegarder</button>
+            </div>
+          </div>
+        </div>
+        <div class="rewards-section">
+          <div class="section-title">Récompenses</div>
+          <div id="rewards-${id}"></div>
+          <div class="add-reward-row">
+            <input type="text" id="rwdtxt-${id}" placeholder="Ma récompense..."/>
+            <select id="rwdpct-${id}"><option value="25">25%</option><option value="50">50%</option><option value="75">75%</option><option value="100">100%</option></select>
+            <button onclick="addReward('${id}')">+</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="ai-card">
+          <div class="section-title">Assistant IA</div>
+          <div class="ai-sugs">
+            <button class="ai-sug" onclick="aiSug('${id}','Crée-moi un plan étape par étape pour ce thème')">Plan de travail</button>
+            <button class="ai-sug" onclick="aiSug('${id}','Donne-moi 5 idées concrètes pour progresser')">Idées</button>
+            <button class="ai-sug" onclick="aiSug('${id}','Motive-moi en 3 phrases percutantes')">Motivation</button>
+            <button class="ai-sug" onclick="aiSug('${id}','Comment construire une routine autour de ce thème ?')">Routine</button>
+          </div>
+          <div class="ai-messages" id="aimsgs-${id}"></div>
+          <div class="ai-input-row">
+            <input class="ai-input" id="aiinput-${id}" placeholder="Demande quelque chose..." onkeydown="if(event.key==='Enter')sendAI('${id}')"/>
+            <button class="ai-send" onclick="sendAI('${id}')">→</button>
+          </div>
+        </div>
+        <div class="pomo-card" id="pomo-${id}">
+          <div class="section-title">Pomodoro</div>
+          <div class="pomo-modes">
+            <button class="pomo-mode-btn active" id="pmw-${id}" onclick="setPomoMode('${id}','work')">Focus</button>
+            <button class="pomo-mode-btn" id="pms-${id}" onclick="setPomoMode('${id}','short')">Courte</button>
+            <button class="pomo-mode-btn" id="pml-${id}" onclick="setPomoMode('${id}','long')">Longue</button>
+          </div>
+          <div class="pomo-ring"><svg width="90" height="90" style="transform:rotate(-90deg)">
+            <circle cx="45" cy="45" r="38" fill="none" stroke="#262420" stroke-width="5"/>
+            <circle cx="45" cy="45" r="38" fill="none" stroke="${c}" stroke-width="5" stroke-dasharray="238.8" stroke-dashoffset="0" id="pring-${id}" stroke-linecap="round" style="transition:stroke-dashoffset 1s linear"/>
+          </svg></div>
+          <div class="pomo-time-val" id="ptval-${id}">25:00</div>
+          <div class="pomo-time-lbl" id="ptlbl-${id}">Concentration</div>
+          <div class="pomo-btns">
+            <button class="pomo-action" onclick="resetPomo('${id}')">↺</button>
+            <button class="pomo-action go" id="pgo-${id}" onclick="togglePomo('${id}')" style="background:${c}">Démarrer</button>
+          </div>
+          <div class="pomo-sdots" id="pdots-${id}"></div>
+          <button class="pomo-settings-toggle" onclick="document.getElementById('psettings-${id}').classList.toggle('open')">⚙ Réglages</button>
+          <div class="pomo-settings-body" id="psettings-${id}">
+            <div class="pomo-setting"><span class="pomo-setting-lbl">Focus</span><div class="pomo-adj"><button onclick="adjPomo('${id}','work',-5)">−</button><span id="pswrk-${id}">25</span><button onclick="adjPomo('${id}','work',5)">+</button></div></div>
+            <div class="pomo-setting"><span class="pomo-setting-lbl">Courte</span><div class="pomo-adj"><button onclick="adjPomo('${id}','short',-1)">−</button><span id="pssht-${id}">5</span><button onclick="adjPomo('${id}','short',1)">+</button></div></div>
+            <div class="pomo-setting"><span class="pomo-setting-lbl">Longue</span><div class="pomo-adj"><button onclick="adjPomo('${id}','long',-5)">−</button><span id="pslng-${id}">15</span><button onclick="adjPomo('${id}','long',5)">+</button></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// RENDER THEME
+let openNoteIdx={};
+function renderTheme(id){
+  const s=loadS();const t=getTheme(s,id);if(!t)return;
+  renderGoals(id,t);renderStreak(id,t);renderCreneaux(id,s);renderNoteChips(id,t);renderRewards(id,t);renderPomoDots(id);
+}
+
+// GOALS
+function renderGoals(id,t){
+  const el=document.getElementById('goals-'+id);if(!el)return;el.innerHTML='';
+  const c=getColor(id,t);
+  (t.goals||[]).forEach((g,i)=>{
+    const pct=goalPct(g);
+    const card=document.createElement('div');
+    card.className='goal-card'+(g.done?' goal-done':'')+(g._expanded?' expanded':'');
+    card.innerHTML=`<div class="goal-card-header" onclick="toggleGoalExpand('${id}',${i})">
+      <div class="goal-card-check" onclick="event.stopPropagation();toggleGoalDone('${id}',${i})">${g.done?'✓':''}</div>
+      <div class="goal-card-info">
+        <div class="goal-card-name">${g.name}</div>
+        <div class="goal-card-meta">${goalMetaText(g)}</div>
+      </div>
+      <div class="goal-card-pct" style="color:${c}">${pct}%</div>
+      <div class="goal-card-arrow">▶</div>
+    </div>
+    <div class="goal-card-bar"><div class="goal-card-bar-fill" style="width:${pct}%;background:${c}"></div></div>
+    <div class="goal-card-body">${goalBodyHTML(id,i,g,c)}</div>`;
+    el.appendChild(card);
+  });
+}
+
+function goalMetaText(g){
+  if(g.type==='steps'){const done=(g.steps||[]).filter(s=>s.done).length;return `${done}/${(g.steps||[]).length} étapes`;}
+  if(g.type==='quantity'){return `${g.current||0} / ${g.target||0} ${g.unit||''}`;}
+  if(g.type==='hours'){return `${(g.loggedHours||0).toFixed(1)}h / ${g.targetHours||0}h`;}
+  return '';
+}
+
+function goalBodyHTML(tid,gi,g,c){
+  if(g.type==='steps'){
+    const steps=(g.steps||[]).map((s,si)=>`
+      <div class="step-item${s.done?' done':''}" onclick="toggleStep('${tid}',${gi},${si})">
+        <div class="step-check">${s.done?'✓':''}</div>
+        <span class="step-num">${si+1}.</span>
+        <span class="step-name">${s.name}</span>
+        <button class="step-del" onclick="event.stopPropagation();delStep('${tid}',${gi},${si})">×</button>
+      </div>`).join('');
+    return `<div class="steps-list">${steps||'<div style="font-size:11px;color:var(--faint);padding:6px 0">Aucune étape — ajoute-en ci-dessous</div>'}</div>
+      <div class="add-step-row">
+        <input type="text" id="stepinput-${tid}-${gi}" placeholder="Nom de l'étape..." onkeydown="if(event.key==='Enter')addStep('${tid}',${gi})"/>
+        <button onclick="addStep('${tid}',${gi})">+ Étape</button>
+      </div>
+      <div class="goal-card-actions"><button class="edit-btn" style="font-size:10px;padding:5px 10px;color:var(--red);border-color:transparent" onclick="delGoal('${tid}',${gi})">🗑 Supprimer</button></div>`;
+  }
+  if(g.type==='quantity'){
+    return `<div class="qty-display">
+        <div class="qty-big" style="color:${c}">${g.current||0}<span style="font-size:20px;color:var(--muted)">/${g.target||0}</span></div>
+        <div class="qty-unit">${g.unit||'éléments'}</div>
+      </div>
+      <div class="qty-controls">
+        <button class="qty-btn" onclick="adjQty('${tid}',${gi},-1)">−</button>
+        <span class="qty-fraction" style="color:${c}">${g.current||0} / ${g.target||0}</span>
+        <button class="qty-btn" onclick="adjQty('${tid}',${gi},1)">+</button>
+      </div>
+      <div class="qty-manual">
+        <input type="number" id="qtyval-${tid}-${gi}" placeholder="Valeur exacte" min="0" max="${g.target||9999}"/>
+        <button onclick="setQty('${tid}',${gi})">Définir</button>
+      </div>
+      <div class="goal-card-actions"><button class="edit-btn" style="font-size:10px;padding:5px 10px;color:var(--red);border-color:transparent" onclick="delGoal('${tid}',${gi})">🗑 Supprimer</button></div>`;
+  }
+  if(g.type==='hours'){
+    const logged=(g.loggedHours||0).toFixed(1);
+    const sessions=(g.sessions||[]).slice(-5).reverse().map(s=>`<div class="session-log-item"><span>${s.date}</span><span>+${s.h}h</span></div>`).join('');
+    return `<div class="hours-display">
+        <div class="hours-big" style="color:${c}">${logged}h<span style="font-size:16px;color:var(--muted)"> / ${g.targetHours||0}h</span></div>
+        <div class="hours-sub">Objectif total</div>
+      </div>
+      <div class="hours-log">
+        <button onclick="logHours('${tid}',${gi},0.5)">+30 min</button>
+        <button onclick="logHours('${tid}',${gi},1)">+1h</button>
+        <button onclick="logHours('${tid}',${gi},1.5)">+1h30</button>
+        <button onclick="logHours('${tid}',${gi},2)">+2h</button>
+      </div>
+      <div class="hours-manual">
+        <input type="number" id="hrsinput-${tid}-${gi}" placeholder="Heures..." step="0.5" min="0"/>
+        <button onclick="logHoursManual('${tid}',${gi})">Ajouter</button>
+      </div>
+      <div class="session-log-list">${sessions}</div>
+      <div class="goal-card-actions"><button class="edit-btn" style="font-size:10px;padding:5px 10px;color:var(--red);border-color:transparent" onclick="delGoal('${tid}',${gi})">🗑 Supprimer</button></div>`;
+  }
+  return '';
+}
+
+function toggleGoalExpand(tid,gi){
+  const s=loadS();const t=getTheme(s,tid);t.goals[gi]._expanded=!t.goals[gi]._expanded;saveS(s);renderGoals(tid,t);}
+function toggleGoalDone(tid,gi){const s=loadS();const t=getTheme(s,tid);t.goals[gi].done=!t.goals[gi].done;saveS(s);renderGoals(tid,t);renderHome();}
+function delGoal(tid,gi){if(!confirm('Supprimer ce goal ?'))return;const s=loadS();const t=getTheme(s,tid);t.goals.splice(gi,1);saveS(s);renderGoals(tid,t);renderHome();}
+
+function addStep(tid,gi){
+  const inp=document.getElementById(`stepinput-${tid}-${gi}`);const v=inp.value.trim();if(!v)return;
+  const s=loadS();const t=getTheme(s,tid);if(!t.goals[gi].steps)t.goals[gi].steps=[];
+  t.goals[gi].steps.push({name:v,done:false});saveS(s);inp.value='';renderGoals(tid,t);renderHome();
+}
+function toggleStep(tid,gi,si){const s=loadS();const t=getTheme(s,tid);t.goals[gi].steps[si].done=!t.goals[gi].steps[si].done;saveS(s);renderGoals(tid,t);renderHome();}
+function delStep(tid,gi,si){const s=loadS();const t=getTheme(s,tid);t.goals[gi].steps.splice(si,1);saveS(s);renderGoals(tid,t);renderHome();}
+
+function adjQty(tid,gi,delta){
+  const s=loadS();const t=getTheme(s,tid);const g=t.goals[gi];
+  g.current=Math.max(0,Math.min(g.target||9999,(g.current||0)+delta));
+  if(g.current>=g.target)g.done=true;
+  saveS(s);renderGoals(tid,t);renderHome();
+}
+function setQty(tid,gi){
+  const v=parseFloat(document.getElementById(`qtyval-${tid}-${gi}`).value);if(isNaN(v))return;
+  const s=loadS();const t=getTheme(s,tid);const g=t.goals[gi];
+  g.current=Math.max(0,Math.min(g.target||9999,v));if(g.current>=g.target)g.done=true;
+  saveS(s);renderGoals(tid,t);renderHome();
+}
+function logHours(tid,gi,h){
+  const s=loadS();const t=getTheme(s,tid);const g=t.goals[gi];
+  g.loggedHours=(g.loggedHours||0)+h;
+  if(!g.sessions)g.sessions=[];
+  g.sessions.push({h,date:new Date().toLocaleDateString('fr-FR')});
+  if(g.loggedHours>=g.targetHours)g.done=true;
+  saveS(s);renderGoals(tid,t);renderHome();
+}
+function logHoursManual(tid,gi){
+  const v=parseFloat(document.getElementById(`hrsinput-${tid}-${gi}`).value);if(isNaN(v)||v<=0)return;
+  logHours(tid,gi,v);document.getElementById(`hrsinput-${tid}-${gi}`).value='';
+}
+
+// ADD GOAL MODAL
+let addGoalThemeId='';
+function openAddGoal(tid){
+  addGoalThemeId=tid;curGoalType='steps';curGoalSteps=[];
+  document.getElementById('newGoalName').value='';
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelector('.type-btn[data-type="steps"]').classList.add('selected');
+  renderGoalTypeConfig();
+  document.getElementById('addGoalModal').classList.add('open');
+  setTimeout(()=>document.getElementById('newGoalName').focus(),100);
+}
+function selGoalType(btn,type){
+  curGoalType=type;curGoalSteps=[];
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');
+  renderGoalTypeConfig();
+}
+function renderGoalTypeConfig(){
+  const cfg=document.getElementById('goalTypeConfig');
+  if(curGoalType==='steps'){
+    cfg.innerHTML=`<div class="goal-type-config">
+      <span class="config-label">Étapes du goal</span>
+      <div class="steps-preview" id="stepsPreview"></div>
+      <div class="add-step-inline">
+        <input type="text" id="newStepIn" placeholder="Nom de l'étape..." onkeydown="if(event.key==='Enter')addStepPreview()"/>
+        <button onclick="addStepPreview()">+ Ajouter</button>
+      </div>
+    </div>`;
+    renderStepsPreview();
+  } else if(curGoalType==='quantity'){
+    cfg.innerHTML=`<div class="goal-type-config">
+      <span class="config-label">Objectif quantitatif</span>
+      <div style="display:flex;gap:8px">
+        <input class="config-input" type="number" id="qtyTarget" placeholder="Quantité cible (ex: 12)" min="1" style="flex:1;margin-bottom:0"/>
+        <input class="config-input" type="text" id="qtyUnit" placeholder="Unité (ex: projets, pages...)" style="flex:1;margin-bottom:0"/>
+      </div>
+    </div>`;
+  } else {
+    cfg.innerHTML=`<div class="goal-type-config">
+      <span class="config-label">Objectif en heures</span>
+      <input class="config-input" type="number" id="hrsTarget" placeholder="Total d'heures visé (ex: 40)" min="1"/>
+    </div>`;
+  }
+}
+function addStepPreview(){
+  const inp=document.getElementById('newStepIn');const v=inp.value.trim();if(!v)return;
+  curGoalSteps.push(v);inp.value='';renderStepsPreview();
+}
+function renderStepsPreview(){
+  const el=document.getElementById('stepsPreview');if(!el)return;el.innerHTML='';
+  curGoalSteps.forEach((s,i)=>{
+    const d=document.createElement('div');d.className='step-preview-item';
+    d.innerHTML=`<span class="step-preview-num">${i+1}.</span><span style="flex:1;font-size:12px;color:var(--muted)">${s}</span><button class="step-preview-del" onclick="delStepPreview(${i})">×</button>`;
+    el.appendChild(d);
+  });
+}
+function delStepPreview(i){curGoalSteps.splice(i,1);renderStepsPreview();}
+function confirmAddGoal(){
+  const name=document.getElementById('newGoalName').value.trim();if(!name)return;
+  const s=loadS();const t=getTheme(s,addGoalThemeId);
+  const goal={id:Date.now(),name,type:curGoalType,done:false,_expanded:true};
+  if(curGoalType==='steps'){goal.steps=curGoalSteps.map(n=>({name:n,done:false}));}
+  else if(curGoalType==='quantity'){goal.target=parseInt(document.getElementById('qtyTarget').value)||10;goal.unit=document.getElementById('qtyUnit').value||'éléments';goal.current=0;}
+  else{goal.targetHours=parseFloat(document.getElementById('hrsTarget').value)||10;goal.loggedHours=0;goal.sessions=[];}
+  t.goals.push(goal);saveS(s);closeModal('addGoalModal');renderGoals(addGoalThemeId,t);renderHome();
+}
+
+// STREAK
+function renderStreak(id,t){
+  const el=document.getElementById('streak-box-'+id);if(!el)return;
+  const streak=t.streak||0;
+  const today=new Date().toDateString();
+  const last7=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return d.toDateString();});
+  const days=last7.map((d,i)=>{
+    const done=(t.streakDays||[]).includes(d);
+    const isToday=d===today;
+    return `<div class="sday${done?' done':''}${isToday?' today':''}" onclick="markStreakDay('${id}','${d}')" title="${new Date(d).toLocaleDateString('fr-FR',{weekday:'short'})}">${new Date(d).getDate()}</div>`;
+  }).join('');
+  el.innerHTML=`<div class="streak-box">
+    <div><div class="streak-num">${streak}</div><div class="streak-label">jours de suite ${streak>=3?'🔥':''}</div></div>
+    <div style="flex:1"><div style="font-size:10px;color:var(--faint);font-family:'Syne Mono',monospace;margin-bottom:6px;letter-spacing:0.05em">7 derniers jours</div><div class="streak-days">${days}</div></div>
+  </div>`;
+}
+function markStreakDay(tid,dateStr){
+  const s=loadS();const t=getTheme(s,tid);
+  if(!t.streakDays)t.streakDays=[];
+  const idx=t.streakDays.indexOf(dateStr);
+  if(idx>-1)t.streakDays.splice(idx,1);else t.streakDays.push(dateStr);
+  t.streak=calcStreak(t.streakDays);
+  saveS(s);renderStreak(tid,t);renderHome();
+}
+function calcStreak(days){
+  if(!days||!days.length)return 0;
+  let streak=0;const today=new Date();
+  for(let i=0;i<365;i++){const d=new Date(today);d.setDate(d.getDate()-i);if(days.includes(d.toDateString()))streak++;else break;}
+  return streak;
+}
+
+// CRENEAUX
+function renderCreneaux(id,s){
+  const el=document.getElementById('creneaux-'+id);if(!el)return;el.innerHTML='';
+  const active=(s.activeCreneaux||{})[id];
+  CRENEAUX.forEach(c=>{
+    const d=document.createElement('div');d.className='creneau-slot'+(active===c.id?' active-slot':'');
+    d.onclick=()=>selCreneau(id,c.id,c.tip);
+    d.innerHTML=`<div class="slot-time">${c.icon} ${c.time}</div><div class="slot-desc">${c.desc}</div>`;
+    el.appendChild(d);
+  });
+  const tip=document.getElementById('ctip-'+id);
+  if(active){const ac=CRENEAUX.find(c=>c.id===active);if(ac&&tip){tip.textContent='💡 '+ac.tip;tip.classList.add('show');}}
+  else if(tip)tip.classList.remove('show');
+}
+function selCreneau(tid,cid,tip){
+  const s=loadS();if(!s.activeCreneaux)s.activeCreneaux={};
+  s.activeCreneaux[tid]=s.activeCreneaux[tid]===cid?null:cid;
+  saveS(s);renderCreneaux(tid,s);
+  const tipEl=document.getElementById('ctip-'+tid);
+  if(tipEl&&s.activeCreneaux[tid]){tipEl.textContent='💡 '+tip;tipEl.classList.add('show');}
+  else if(tipEl)tipEl.classList.remove('show');
+}
+
+// NOTES
+function renderNoteChips(id,t){
+  const el=document.getElementById('notechips-'+id);if(!el)return;el.innerHTML='';
+  (t.notes||[]).forEach((n,i)=>{
+    const chip=document.createElement('span');chip.className='note-chip'+(openNoteIdx[id]===i?' active':'');
+    chip.textContent=n.title||'Note sans titre';chip.onclick=()=>openNote(id,i);el.appendChild(chip);
+  });
+  const newChip=document.createElement('span');newChip.className='note-chip new-chip';newChip.textContent='+ Nouvelle note';newChip.onclick=()=>newNote(id);el.appendChild(newChip);
+}
+function newNote(id){openNoteIdx[id]=null;document.getElementById('notetitle-'+id).value='';document.getElementById('notebody-'+id).value='';document.getElementById('noteeditor-'+id).classList.add('open');document.getElementById('notetitle-'+id).focus();}
+function openNote(id,i){const s=loadS();const t=getTheme(s,id);const n=t.notes[i];openNoteIdx[id]=i;document.getElementById('notetitle-'+id).value=n.title||'';document.getElementById('notebody-'+id).value=n.body||'';document.getElementById('noteeditor-'+id).classList.add('open');}
+function saveNote(id){
+  const title=document.getElementById('notetitle-'+id).value;const body=document.getElementById('notebody-'+id).value;
+  const s=loadS();const t=getTheme(s,id);const i=openNoteIdx[id];
+  if(i!=null)t.notes[i]={title,body,updatedAt:Date.now()};else t.notes.push({title,body,updatedAt:Date.now()});
+  saveS(s);cancelNote(id);renderNoteChips(id,t);
+}
+function cancelNote(id){document.getElementById('noteeditor-'+id).classList.remove('open');openNoteIdx[id]=undefined;}
+function delNote(id){const i=openNoteIdx[id];if(i==null)return cancelNote(id);if(!confirm('Supprimer cette note ?'))return;const s=loadS();const t=getTheme(s,id);t.notes.splice(i,1);saveS(s);cancelNote(id);renderNoteChips(id,t);}
+
+// REWARDS
+function renderRewards(id,t){
+  const el=document.getElementById('rewards-'+id);if(!el)return;el.innerHTML='';
+  const pct=calcPct(t);
+  [...(t.rewards||[]),...(t.customRewards||[])].forEach(r=>{
+    const unlocked=pct>=(r.pct||r.milestone||50);
+    const d=document.createElement('div');d.className='reward-row'+(unlocked?' unlocked':'');
+    d.innerHTML=`<span class="reward-icon-r">${r.icon||'🎁'}</span><span class="reward-text-r">${r.text}</span><span class="reward-milestone-r">${unlocked?'✓ débloqué':'à '+(r.pct||r.milestone||50)+'%'}</span>`;
+    el.appendChild(d);
+  });
+}
+function addReward(id){
+  const text=document.getElementById('rwdtxt-'+id).value.trim();const pct=parseInt(document.getElementById('rwdpct-'+id).value);
+  if(!text)return;const s=loadS();const t=getTheme(s,id);if(!t.customRewards)t.customRewards=[];
+  t.customRewards.push({icon:'🎁',text,pct});saveS(s);document.getElementById('rwdtxt-'+id).value='';renderRewards(id,t);
+}
+
+// EDIT DESC
+function editDesc(id){const s=loadS();const t=getTheme(s,id);const nd=prompt('Nouvelle description :',t.desc||'');if(nd===null)return;t.desc=nd;saveS(s);buildThemePages();renderTheme(id);renderHome();}
+
+// ADD CUSTOM THEME
+function openAddTheme(){
+  selEmoji=EMOJIS[0];selColor="#A8E6CF";
+  document.getElementById('newThemeName').value='';document.getElementById('newThemeDesc').value='';
+  const ep=document.getElementById('emojiPicker');ep.innerHTML='';
+  EMOJIS.forEach(e=>{const el=document.createElement('span');el.className='emoji-opt'+(e===selEmoji?' selected':'');el.textContent=e;el.onclick=()=>{selEmoji=e;document.querySelectorAll('.emoji-opt').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');};ep.appendChild(el);});
+  document.getElementById('addThemeModal').classList.add('open');
+}
+function selColor(el,c){selColor=c;document.querySelectorAll('.color-opt').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');}
+function confirmAddTheme(){
+  const name=document.getElementById('newThemeName').value.trim();if(!name)return;
+  const s=loadS();if(!s.customThemes)s.customThemes=[];
+  const id='ct_'+Date.now();
+  const theme={id,name,desc:document.getElementById('newThemeDesc').value.trim(),icon:selEmoji,color:selColor,goals:[],notes:[],rewards:[],customRewards:[],streak:0,streakDays:[]};
+  s.customThemes.push(theme);saveS(s);closeModal('addThemeModal');
+  const nav=document.getElementById('topnav');const addBtn=nav.querySelector('.nav-add-btn');
+  const btn=document.createElement('button');btn.className='nav-tab';btn.dataset.theme='custom';btn.dataset.id=id;
+  btn.style.color=selColor;btn.innerHTML=`${selEmoji} ${name}`;
+  btn.onclick=function(){document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));this.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const pg=document.getElementById('tp-'+id);if(pg){pg.classList.add('active');renderTheme(id);}
+  };
+  nav.insertBefore(btn,addBtn);buildThemePages();renderHome();
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// POMODORO
+function initPomo(id,color){pomos[id]={mode:'work',running:false,remaining:25*60,interval:null,count:0,settings:{work:25,short:5,long:15},color};}
+function setPomoMode(id,m){
+  const p=pomos[id];if(!p)return;clearInterval(p.interval);p.running=false;p.mode=m;
+  const mins=m==='work'?p.settings.work:m==='short'?p.settings.short:p.settings.long;p.remaining=mins*60;
+  ['pmw','pms','pml'].forEach(pre=>{const b=document.getElementById(pre+'-'+id);if(b)b.classList.remove('active');});
+  const bm={work:'pmw',short:'pms',long:'pml'};const btn=document.getElementById(bm[m]+'-'+id);
+  if(btn){btn.classList.add('active');btn.style.background=m==='work'?p.color:'#2D7A5F';}
+  document.getElementById('pgo-'+id).textContent='Démarrer';
+  document.getElementById('ptlbl-'+id).textContent=m==='work'?'Concentration':m==='short'?'Pause courte':'Pause longue';
+  updatePomoDisp(id);
+}
+function togglePomo(id){
+  const p=pomos[id];if(!p)return;
+  if(p.running){clearInterval(p.interval);p.running=false;document.getElementById('pgo-'+id).textContent='Reprendre';}
+  else{p.running=true;document.getElementById('pgo-'+id).textContent='Pause';
+    p.interval=setInterval(()=>{p.remaining--;if(p.remaining<=0){clearInterval(p.interval);p.running=false;p.remaining=0;if(p.mode==='work'){p.count++;renderPomoDots(id);}document.getElementById('pgo-'+id).textContent='Démarrer';alert(p.mode==='work'?'🎉 Session terminée !':'☕ C\'est reparti !');} updatePomoDisp(id);},1000);
+  }
+}
+function resetPomo(id){const p=pomos[id];if(!p)return;clearInterval(p.interval);p.running=false;const mins=p.mode==='work'?p.settings.work:p.mode==='short'?p.settings.short:p.settings.long;p.remaining=mins*60;document.getElementById('pgo-'+id).textContent='Démarrer';updatePomoDisp(id);}
+function updatePomoDisp(id){const p=pomos[id];if(!p)return;const m=Math.floor(p.remaining/60),s=p.remaining%60;const el=document.getElementById('ptval-'+id);if(el)el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');const total=(p.mode==='work'?p.settings.work:p.mode==='short'?p.settings.short:p.settings.long)*60;const pct=p.remaining/total;const ring=document.getElementById('pring-'+id);if(ring)ring.style.strokeDashoffset=238.8*(1-pct);}
+function renderPomoDots(id){const p=pomos[id];if(!p)return;const el=document.getElementById('pdots-'+id);if(!el)return;el.innerHTML='';for(let i=0;i<4;i++){const d=document.createElement('div');d.className='psd'+(i<p.count%4?'':' ');d.style.background=i<p.count%4?p.color:'var(--surface3)';el.appendChild(d);}}
+function adjPomo(id,t,delta){const p=pomos[id];if(!p)return;if(t==='work')p.settings.work=Math.max(5,Math.min(60,p.settings.work+delta));else if(t==='short')p.settings.short=Math.max(1,Math.min(30,p.settings.short+delta));else p.settings.long=Math.max(5,Math.min(60,p.settings.long+delta));document.getElementById('pswrk-'+id).textContent=p.settings.work;document.getElementById('pssht-'+id).textContent=p.settings.short;document.getElementById('pslng-'+id).textContent=p.settings.long;if(!p.running)resetPomo(id);}
+
+// AI
+async function sendAI(id){
+  const inp=document.getElementById('aiinput-'+id);const q=inp.value.trim();if(!q)return;inp.value='';
+  aiMsg(id,q,'user');aiMsg(id,'En train de réfléchir...','assistant thinking');
+  const s=loadS();const t=getTheme(s,id);
+  const goals=(t.goals||[]).map(g=>`${g.name} (${goalPct(g)}%)`).join(', ')||'aucun goal';
+  const sys=`Tu es un assistant personnel pour Ikram, étudiante en architecture à Agadir. Thème actuel: "${t.name}" - ${t.desc||''}. Goals: ${goals}. Réponds en français, sois concise et motivante. Maximum 4 phrases.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,system:sys,messages:[{role:'user',content:q}]})});
+    const data=await res.json();const reply=data.content?.[0]?.text||'Erreur.';
+    document.getElementById('aimsgs-'+id).querySelector('.thinking')?.remove();aiMsg(id,reply,'assistant');
+  }catch(e){document.getElementById('aimsgs-'+id).querySelector('.thinking')?.remove();aiMsg(id,'Erreur de connexion.','assistant');}
+}
+function aiSug(id,q){document.getElementById('aiinput-'+id).value=q;sendAI(id);}
+function aiMsg(id,text,type){const el=document.getElementById('aimsgs-'+id);if(!el)return;const d=document.createElement('div');d.className='ai-msg '+type;d.textContent=text;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+
+renderAll();
+</script>
+</body>
+</html>
