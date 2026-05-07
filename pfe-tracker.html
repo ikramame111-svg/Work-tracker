@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PFE Ikram — Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F4EF;
+    --surface: #FFFFFF;
+    --surface2: #F0EDE7;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.14);
+    --text: #1A1814;
+    --muted: #7A7570;
+    --accent: #8B6F47;
+    --accent-light: #F2EBE0;
+    --green: #2D7A5F;
+    --green-light: #E4F2EC;
+    --amber: #B5720A;
+    --amber-light: #FDF3E1;
+    --red: #C0392B;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--bg);
+  }
+
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3rem 2.5rem;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+
+  .login-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--accent-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 24px;
+  }
+
+  .login-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+
+  .login-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .login-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    text-align: center;
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  .login-input:focus { border-color: var(--accent); }
+
+  .login-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .login-btn:hover { opacity: 0.88; }
+
+  .login-error {
+    font-size: 13px;
+    color: var(--red);
+    margin-top: 0.75rem;
+    min-height: 20px;
+  }
+
+  /* ── APP ── */
+  #app { display: none; }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .topbar-left h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--text);
+  }
+
+  .topbar-left p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .logout-btn {
+    font-size: 12px;
+    color: var(--muted);
+    background: none;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .logout-btn:hover { color: var(--text); }
+
+  .main { max-width: 680px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* ── STREAK BANNER ── */
+  .streak-banner {
+    background: var(--green-light);
+    border: 1px solid #A8D5C2;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--green);
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    display: none;
+    animation: slideDown 0.4s ease;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── STATS ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    background: var(--surface2);
+    border-radius: 99px;
+    height: 5px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 5px;
+    border-radius: 99px;
+    background: var(--green);
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+
+  /* ── DAY ROWS ── */
+  .days { display: flex; flex-direction: column; gap: 8px; margin-bottom: 2rem; }
+
+  .day-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .day-row.is-done {
+    background: var(--green-light);
+    border-color: #A8D5C2;
+  }
+
+  .day-row.is-active {
+    background: var(--amber-light);
+    border-color: #F0C978;
+  }
+
+  .day-row.is-locked {
+    opacity: 0.55;
+  }
+
+  .day-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    flex-shrink: 0;
+    background: var(--surface2);
+    color: var(--muted);
+  }
+
+  .is-done .day-num { background: #2D7A5F; color: #fff; font-size: 16px; }
+  .is-active .day-num { background: var(--amber); color: #fff; }
+
+  .day-info { flex: 1; min-width: 0; }
+
+  .day-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .is-done .day-title { color: var(--green); }
+  .is-active .day-title { color: var(--amber); }
+
+  .day-pages {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .day-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .session-dots { display: flex; gap: 4px; }
+
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .dot.filled { background: var(--green); border-color: var(--green); }
+  .is-active .dot.filled { background: var(--amber); border-color: var(--amber); }
+
+  .mark-btn {
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .mark-btn:hover { background: var(--surface2); color: var(--text); }
+  .is-done .mark-btn { border-color: #A8D5C2; color: var(--green); }
+
+  /* ── TODAY BOX ── */
+  .today-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 2rem;
+  }
+
+  .today-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .today-slot {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+
+  .slot-time {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .slot-desc {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── REWARDS ── */
+  .rewards-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 2rem;
+  }
+
+  .rewards { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+
+  .reward {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--surface2);
+    opacity: 0.45;
+    transition: opacity 0.3s;
+  }
+
+  .reward.unlocked {
+    opacity: 1;
+    background: var(--green-light);
+    border: 1px solid #A8D5C2;
+    animation: pop 0.4s ease;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0.97); }
+    60% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+
+  .reward-icon { font-size: 20px; flex-shrink: 0; }
+
+  .reward-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .reward.unlocked .reward-name { color: var(--green); }
+
+  .reward-cond {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* ── MOTIVATIONAL QUOTE ── */
+  .quote-box {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    border-top: 1px solid var(--border);
+    margin-top: 1rem;
+  }
+
+  .quote-text {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .today-grid { grid-template-columns: 1fr; }
+    .topbar { padding: 1rem; }
+    .main { padding: 1.5rem 1rem 3rem; }
+    .day-title { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">🕌</div>
+    <h1 class="login-title">PFE Ikram</h1>
+    <p class="login-sub">École Nationale d'Architecture · Agadir · 2024–2025</p>
+    <input type="password" id="pwd-input" class="login-input" placeholder="mot de passe" maxlength="30" autocomplete="off" />
+    <button class="login-btn" onclick="checkPassword()">Entrer</button>
+    <p class="login-error" id="login-error"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>PFE · La mosquée contemporaine</h1>
+      <p>Ikram AMECHKOU · ENAA Agadir · DENA 2024–2025</p>
+    </div>
+    <button class="logout-btn" onclick="logout()">Se déconnecter</button>
+  </div>
+
+  <div class="main">
+
+    <div class="streak-banner" id="streakBanner"></div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="statDone">0</div>
+        <div class="stat-label">Jours faits</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="statStreak">0</div>
+        <div class="stat-label">Streak 🔥</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="statSessions">0</div>
+        <div class="stat-label">Sessions</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="statLeft">10</div>
+        <div class="stat-label">Restants</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+
+    <div class="section-label">Plan — 10 jours</div>
+    <div class="days" id="daysList"></div>
+
+    <div class="today-box">
+      <div class="section-label">Tes créneaux — aujourd'hui</div>
+      <div class="today-grid">
+        <div class="today-slot">
+          <div class="slot-time">🌅 Matin libre</div>
+          <div class="slot-desc">Travail concentré · 1–3h</div>
+        </div>
+        <div class="today-slot">
+          <div class="slot-time">🌙 Soir (18h–21h)</div>
+          <div class="slot-desc">Après les obligations famille</div>
+        </div>
+        <div class="today-slot">
+          <div class="slot-time">🚗 Trajets voiture</div>
+          <div class="slot-desc">Relire les corrections sur téléphone</div>
+        </div>
+        <div class="today-slot">
+          <div class="slot-time">⚡ Micro-sessions</div>
+          <div class="slot-desc">15–30 min entre deux tâches</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rewards-box">
+      <div class="section-label">Récompenses</div>
+      <div class="rewards" id="rewardsList"></div>
+    </div>
+
+    <div class="quote-box">
+      <p class="quote-text" id="motivQuote">"Le diplôme n'attend que toi."</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const PASSWORD = "ikram2025pfe";
+const SECRET_SEGMENT = "mosquee-agadir-dena";
+
+const DAYS = [
+  { title: "Partie introductive", pages: "Pages 1–23", sessions: 2 },
+  { title: "Chap. I + II — Maison de Dieu & au-delà du culte", pages: "Pages 24–63", sessions: 2 },
+  { title: "Chap. III — Développement durable + Benchmark", pages: "Pages 64–87", sessions: 2 },
+  { title: "Partie 2 intro + Chap. I — Souss Al-Alima", pages: "Pages 88–105", sessions: 2 },
+  { title: "Chap. II — Mosquées d'Agadir + grille durabilité", pages: "Pages 106–128", sessions: 2 },
+  { title: "Chap. III — Analyse de site", pages: "Pages 129–153", sessions: 2 },
+  { title: "Chap. III — Projet architectural", pages: "Pages 154–194", sessions: 3 },
+  { title: "Bibliographie — réécriture Chicago complète", pages: "Pages 195–197", sessions: 2 },
+  { title: "Liste des figures — uniformisation totale", pages: "Pages 198–208", sessions: 2 },
+  { title: "Relecture finale + cohérence + pagination", pages: "Tout le document", sessions: 2 }
+];
+
+const REWARDS = [
+  { days: 1,  icon: "☕", name: "Jour 1 terminé !", cond: "Un café ou thé en plein air — tu le mérites" },
+  { days: 3,  icon: "🌙", name: "3 jours de suite", cond: "Une sortie ou activité de ton choix le soir" },
+  { days: 5,  icon: "🎉", name: "À mi-chemin !", cond: "Une vraie pause — restaurant, shopping, cinéma" },
+  { days: 7,  icon: "✨", name: "7 jours — presque là", cond: "Quelque chose qui te fait vraiment plaisir" },
+  { days: 10, icon: "🎓", name: "PFE corrigé — DIPLÔME !", cond: "La plus belle récompense : ton DENA" }
+];
+
+const QUOTES = [
+  "« Le diplôme n'attend que toi. »",
+  "« Chaque page corrigée est un pas vers le 20/20. »",
+  "« Tu as construit ce mémoire. Tu peux le parfaire. »",
+  "« La mosquée contemporaine d'Agadir commence par cette correction. »",
+  "« Ikram Amechkou, architecte DENA. Bientôt. »",
+  "« Petit à petit, l'oiseau fait son nid. »"
+];
+
+const STORAGE_KEY = "pfe_ikram_v2";
+
+// ── PASSWORD + URL CHECK ──
+function checkPassword() {
+  const val = document.getElementById('pwd-input').value.trim();
+  const err = document.getElementById('login-error');
+  if (val === PASSWORD) {
+    sessionStorage.setItem('pfe_auth', '1');
+    showApp();
+    err.textContent = '';
+  } else {
+    err.textContent = 'Mot de passe incorrect.';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
+});
+
+function logout() {
+  sessionStorage.removeItem('pfe_auth');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('pwd-input').value = '';
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  render();
+}
+
+// Check URL secret segment
+function checkAccess() {
+  const path = window.location.pathname + window.location.hash + window.location.search;
+  const hasSecret = path.includes(SECRET_SEGMENT);
+  const hasSession = sessionStorage.getItem('pfe_auth') === '1';
+  if (hasSecret && hasSession) { showApp(); return; }
+  if (hasSession) { showApp(); return; }
+  // Show login by default
+}
+
+// ── STATE ──
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { done: [], sessions: {}, lastVisit: null }; }
+  catch { return { done: [], sessions: {}, lastVisit: null }; }
+}
+
+function saveState(s) {
+  s.lastVisit = new Date().toISOString();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+}
+
+// ── RENDER ──
+function render() {
+  const s = loadState();
+  const doneDays = s.done.length;
+  const totalSessions = Object.values(s.sessions).reduce((a, b) => a + b, 0);
+  const nextDay = DAYS.findIndex((_, i) => !s.done.includes(i));
+
+  // Stats
+  document.getElementById('statDone').textContent = doneDays;
+  document.getElementById('statLeft').textContent = 10 - doneDays;
+  document.getElementById('statSessions').textContent = totalSessions;
+  document.getElementById('progressFill').style.width = Math.round(doneDays / 10 * 100) + '%';
+
+  // Streak
+  let streak = 0;
+  for (let i = doneDays - 1; i >= 0; i--) {
+    if (s.done.includes(i)) streak++;
+    else break;
+  }
+  document.getElementById('statStreak').textContent = streak;
+
+  // Banner
+  const banner = document.getElementById('streakBanner');
+  if (streak >= 2) {
+    banner.textContent = streak + ' jours de suite 🔥 Tu es en feu Ikram ! Continue comme ça.';
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Quote
+  document.getElementById('motivQuote').textContent = QUOTES[doneDays % QUOTES.length];
+
+  // Days
+  const list = document.getElementById('daysList');
+  list.innerHTML = '';
+  DAYS.forEach((d, i) => {
+    const isDone = s.done.includes(i);
+    const isActive = i === nextDay;
+    const isLocked = !isDone && !isActive;
+    const sessionsDone = s.sessions[i] || 0;
+
+    const row = document.createElement('div');
+    row.className = 'day-row' + (isDone ? ' is-done' : isActive ? ' is-active' : isLocked ? ' is-locked' : '');
+
+    const numContent = isDone ? '✓' : (i + 1);
+    const dots = Array.from({ length: d.sessions }, (_, j) =>
+      `<div class="dot ${j < sessionsDone ? 'filled' : ''}" onclick="addSession(event,${i},${j+1})" title="Session ${j+1}"></div>`
+    ).join('');
+
+    const btnHTML = (isDone || isActive)
+      ? `<button class="mark-btn" onclick="toggleDay(event,${i})">${isDone ? '✓ Fait' : 'Marquer fait'}</button>`
+      : '';
+
+    row.innerHTML = `
+      <div class="day-num">${numContent}</div>
+      <div class="day-info">
+        <div class="day-title">Jour ${i+1} — ${d.title}</div>
+        <div class="day-pages">${d.pages}</div>
+      </div>
+      <div class="day-right">
+        <div class="session-dots">${dots}</div>
+        ${btnHTML}
+      </div>
+    `;
+    list.appendChild(row);
+  });
+
+  // Rewards
+  const rList = document.getElementById('rewardsList');
+  rList.innerHTML = '';
+  REWARDS.forEach(r => {
+    const unlocked = doneDays >= r.days;
+    const div = document.createElement('div');
+    div.className = 'reward' + (unlocked ? ' unlocked' : '');
+    div.innerHTML = `
+      <div class="reward-icon">${r.icon}</div>
+      <div>
+        <div class="reward-name">${r.name}${unlocked ? ' — débloqué ✓' : ' — ' + r.days + ' jours'}</div>
+        <div class="reward-cond">${r.cond}</div>
+      </div>
+    `;
+    rList.appendChild(div);
+  });
+}
+
+function toggleDay(e, i) {
+  e.stopPropagation();
+  const s = loadState();
+  if (s.done.includes(i)) {
+    s.done = s.done.filter(d => d !== i);
+  } else {
+    s.done.push(i);
+    if (!s.sessions[i]) s.sessions[i] = DAYS[i].sessions;
+  }
+  saveState(s);
+  render();
+}
+
+function addSession(e, dayIdx, count) {
+  e.stopPropagation();
+  const s = loadState();
+  s.sessions[dayIdx] = count;
+  saveState(s);
+  render();
+}
+
+// ── INIT ──
+checkAccess();
+</script>
+</body>
+</html>
